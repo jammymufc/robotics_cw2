@@ -1,6 +1,7 @@
 build/
 devel/
 .group_ws
+.catkin_workspace
 logs/
 .catkin_tools/
 install
