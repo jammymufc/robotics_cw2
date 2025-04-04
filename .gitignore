@@ -1,0 +1,9 @@
+build/
+devel/
+.group_ws
+logs/
+.catkin_tools/
+install
+.pyc
+.swp
+~
