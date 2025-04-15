@@ -38,10 +38,12 @@ class QLearningNav:
         # Position tracking
         self.position = [0, 0]
         self.orientation = 0
-        self.goal = [5, 5]
+        self.goal = [2.5, 2.5]  # Goal location matches the new maze goal marker position
         self.start_positions = [
-            [0, 0], [1, 0], [0, 1], [-1, 0], [0, -1],  # Add various starting positions
-            [2, 2], [-2, -2], [3, -3], [-3, 3]
+            [-2.5, -2.5],  # New maze starting point
+            [-2.0, -2.0], [-3.0, -2.0], [-2.0, -3.0],  # Variations near start
+            [-3.0, -1.0], [-1.0, -3.0],  # Other positions in the first chamber
+            [-3.0, 0], [-1.0, -1.0]  # Mid-maze positions for variety
         ]
         
         # Publishers and subscribers
@@ -66,14 +68,14 @@ class QLearningNav:
         self.replay_buffer = deque(maxlen=10000)
         self.batch_size = 32
         
-        # Goal zone parameters
-        self.goal_reached_distance = 0.5
+        # Goal zone parameters - increased for new maze
+        self.goal_reached_distance = 0.8  # Increased from 0.5 for easier goal detection
         
         # Tracking metrics
         self.episode_steps = []
         self.episode_rewards = []
         
-        rospy.loginfo("Enhanced Q-Learning Navigation initialized!")
+        rospy.loginfo("Enhanced Q-Learning Navigation initialized for new maze!")
 
     def laser_callback(self, data):
         self.laser_data = data.ranges
@@ -158,27 +160,27 @@ class QLearningNav:
         return self.current_discrete_state
 
     def discretize_laser(self, reading):
-        # More bins for laser readings
+        # More bins for laser readings - adjusted for larger maze
         if reading < 0.3:
             return 0  # Very close - danger
-        elif reading < 0.6:
+        elif reading < 0.7:  # Increased from 0.6
             return 1  # Close
-        elif reading < 1.0:
+        elif reading < 1.5:  # Increased from 1.0
             return 2  # Medium
-        elif reading < 2.0:
+        elif reading < 2.5:  # Increased from 2.0
             return 3  # Far
         else:
             return 4  # Very far
 
     def discretize_distance(self, distance):
-        # More bins for distance to goal
+        # More bins for distance to goal - adjusted for larger maze
         if distance < self.goal_reached_distance:
             return 0  # Goal reached
-        elif distance < 1.0:
+        elif distance < 2.0:  # Increased from 1.0
             return 1  # Very close to goal
-        elif distance < 2.0:
+        elif distance < 4.0:  # Kept the same
             return 2  # Close to goal
-        elif distance < 4.0:
+        elif distance < 8.0:  # Increased from 4.0
             return 3  # Medium distance
         else:
             return 4  # Far from goal
@@ -232,13 +234,13 @@ class QLearningNav:
     def take_action(self, action):
         twist = Twist()
         
-        # Adjusted velocities for smoother motion
+        # Adjusted velocities for smoother motion in larger maze
         if action == 0:  # Move forward
-            twist.linear.x = 0.3  # Reduced speed for safety
+            twist.linear.x = 0.35  # Slightly increased from 0.3
             twist.angular.z = 0.0
         elif action == 1:  # Turn left
             twist.linear.x = 0.1  # Keep some forward motion during turns
-            twist.angular.z = 0.5  # Reduced for smoother turns
+            twist.angular.z = 0.5  # Kept the same
         elif action == 2:  # Turn right
             twist.linear.x = 0.1
             twist.angular.z = -0.5
@@ -268,22 +270,22 @@ class QLearningNav:
         
         # Check terminal conditions first
         if self.collision:
-            reward = -20  # Increased penalty for collisions
+            reward = -25  # Increased penalty for collisions in larger maze
             done = True
             rospy.logwarn("Collision detected! Reward: %.2f", reward)
         elif current_distance < self.goal_reached_distance:
             # Bonus for reaching goal and higher reward for faster completion
-            reward = 50
+            reward = 75  # Increased from 50 for larger maze
             done = True
             rospy.loginfo("Goal reached! Reward: %.2f", reward)
         else:
             # Progress reward based on distance change
             distance_change = self.previous_distance_to_goal - current_distance
-            progress_reward = distance_change * 10  # Increased multiplier
+            progress_reward = distance_change * 12  # Increased multiplier for larger maze
             
             # Heading reward - encourage facing the goal
             angle_factor = 1.0 - min(abs(current_angle) / math.pi, 1.0)
-            heading_reward = angle_factor * 0.5
+            heading_reward = angle_factor * 0.8  # Increased from 0.5
             
             # Time penalty to encourage efficiency
             time_penalty = -0.1
@@ -301,8 +303,8 @@ class QLearningNav:
             # Sum all reward components
             reward = progress_reward + heading_reward + time_penalty + action_penalty + proximity_penalty
             
-            # Cap reward to reasonable range
-            reward = max(min(reward, 5), -5)
+            # Cap reward to reasonable range - increased for larger maze
+            reward = max(min(reward, 8), -8)
             
         # Update previous distance
         self.previous_distance_to_goal = current_distance
@@ -399,7 +401,7 @@ class QLearningNav:
             
         return self.get_state()
 
-    def run_q_learning(self, max_episodes=200, max_steps=300):
+    def run_q_learning(self, max_episodes=200, max_steps=400):  # Increased max_steps for larger maze
         """Run Q-learning algorithm"""
         try:
             rospy.loginfo("Starting Enhanced Q-Learning with %d episodes...", max_episodes)
@@ -494,7 +496,7 @@ class QLearningNav:
             rospy.logerr("Error loading Q-table: %s", e)
             return False
     
-    def run_evaluation(self, num_episodes=10, max_steps=300):
+    def run_evaluation(self, num_episodes=10, max_steps=400):  # Increased max_steps for larger maze
         """Run evaluation using learned policy"""
         rospy.loginfo("Starting evaluation with %d episodes...", num_episodes)
         success_count = 0

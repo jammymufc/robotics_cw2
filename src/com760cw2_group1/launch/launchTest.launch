@@ -2,9 +2,9 @@
   <!-- Load robot description into parameter server -->
   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find com760cw2_group1)/urdf/Group1Bot.urdf.xacro'" />
   
-  <!-- Start Gazebo with custom world -->
+  <!-- Start Gazebo with new maze world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find com760cw2_group1)/world/Group1World.world"/>
+    <arg name="world_name" value="$(find com760cw2_group1)/world/RL_MazeWorld.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -12,7 +12,7 @@
     <arg name="debug" value="false"/>
   </include>
   
-  <!-- Spawn the robot model -->
+  <!-- Spawn the robot model at the center of the world -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-param robot_description -urdf -model Group1Bot -x 0 -y 0 -z 0.1"/>
   

@@ -18,8 +18,8 @@ def start_learning_client():
         # Give the robot time to spawn and stabilize
         rospy.sleep(5.0)
         
-        # Call the service to start learning
-        response = learn_service(True, 100, 200)  # 100 episodes, 200 max steps each
+        # Call the service to start learning - increased episodes and steps for larger maze
+        response = learn_service(True, 150, 300)  # 150 episodes, 300 max steps each
         rospy.loginfo("Service response: {}".format(response.message))
         
     except rospy.ServiceException as e:
