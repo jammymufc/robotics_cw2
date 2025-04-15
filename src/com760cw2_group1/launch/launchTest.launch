@@ -1,15 +1,27 @@
 <launch>
   <!-- Load robot description into parameter server -->
   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find com760cw2_group1)/urdf/Group1Bot.urdf.xacro'" />
-
-  <!-- Start Gazebo with your custom world -->
+  
+  <!-- Start Gazebo with custom world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find com760cw2_group1)/world/Group1World.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
   </include>
-
+  
   <!-- Spawn the robot model -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-param robot_description -urdf -model Group1Bot -x 0 -y 0 -z 0.1"/>
+  
+  <!-- Start Q-Learning navigation node -->
+  <node name="q_learning_nav" pkg="com760cw2_group1" type="q_learning_nav.py" output="screen"/>
+  
+  <!-- Run rviz for visualization -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find com760cw2_group1)/rviz/q_learning_nav.rviz"/>
+  
+  <!-- Service client to start learning -->
+  <node name="start_learning" pkg="com760cw2_group1" type="start_learning_client.py" output="screen"/>
 </launch>
