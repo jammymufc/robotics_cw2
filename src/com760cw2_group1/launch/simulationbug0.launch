@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- World parameters -->
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="pause" default="false"/>
+  <arg name="world" default="world02" />
+  
+  <!-- Robot spawn parameters -->
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="0.5"/>
+  
+  <!-- Bug0 algorithm parameters -->
+  <arg name="initial_x" default="0" />
+  <arg name="initial_y" default="8" />
+  <arg name="des_x" default="2" />
+  <arg name="des_y" default="-3" />
+  
+  <!-- Launch Gazebo with world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find com760cw2_group1)/world/$(arg world).world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg pause)"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+  
+  <!-- Load robot description -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find com760cw2_group1)/urdf/group1Bot.xacro'" />
+  
+  <!-- Spawn robot -->
+  <node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-urdf -param robot_description -model group1Bot -x $(arg x) -y $(arg y) -z $(arg z)" />
+  
+  <!-- Set Bug0 algorithm parameters -->
+  <param name="initial_x" value="$(arg initial_x)" />
+  <param name="initial_y" value="$(arg initial_y)" />
+  <param name="des_pos_x" value="$(arg des_x)" />
+  <param name="des_pos_y" value="$(arg des_y)" />
+  
+  <!-- Launch Bug0 algorithm nodes after a delay to ensure simulation is ready -->
+  <arg name="node_start_delay" default="5.0" /> 
+  <node pkg="com760cw2_group1" type="FollowWall.py" name="FollowWall" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@'" />
+  <node pkg="com760cw2_group1" type="GoToPoint.py" name="GoToPoint" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@'" />
+  <node pkg="com760cw2_group1" type="bug0.py" name="bug0" output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@'" />
+</launch>

@@ -1,2 +1,0 @@
-Placeholder to allow empty folders to be committed to the repo. 
-

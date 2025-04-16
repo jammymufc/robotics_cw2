@@ -1,2 +1,0 @@
-float32 reward_value
-bool episode_done

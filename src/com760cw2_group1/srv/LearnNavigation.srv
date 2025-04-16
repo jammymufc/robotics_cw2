@@ -1,8 +1,0 @@
-# Request
-bool start_learning
-int32 max_episodes
-int32 max_steps_per_episode
----
-# Response
-bool success
-string message
