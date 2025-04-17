@@ -5,7 +5,7 @@
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="pause" default="false"/>
-  <arg name="world" default="world01" />
+  <arg name="world" default="world02" />
   
   <!-- Robot spawn parameters -->
   <arg name="x" default="0"/>
